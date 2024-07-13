@@ -1,14 +1,10 @@
 {
-  "name": "playground-ts",
+  "name": "@lsby/ts-env",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
   "exports": {
     "require": "./dist/cjs/index.cjs",
     "import": "./dist/esm/index.js"
-  },
-  "bin": {
-    "playground-ts-bin": "dist/esm/index.js"
   },
   "files": [
     "dist"
@@ -28,6 +24,8 @@
     "test:coverage": "npm run check:all && vitest run --coverage && open-cli ./coverage/index.html"
   },
   "dependencies": {
+    "@lsby/ts-log": "^0.0.3",
+    "dotenv": "^16.4.5",
     "vitest": "^2.0.2",
     "zod": "^3.23.8"
   },
