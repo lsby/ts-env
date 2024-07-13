@@ -64,12 +64,13 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
   }
 
   async 获得环境变量(): Promise<z.infer<环境变量描述>> {
-    if (this.环境变量 != null) return this.环境变量
-
     var sleep = async (): Promise<void> => {
       await new Promise<void>((res, _rej) => setTimeout(() => res(), 0))
     }
     while (this.锁) await sleep()
+
+    if (this.环境变量 != null) return this.环境变量
+
     this.锁 = true
 
     await this.初始化()
