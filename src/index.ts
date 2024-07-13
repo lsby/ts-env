@@ -63,13 +63,12 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
   }
 
   async 获得环境变量(): Promise<z.infer<环境变量描述>> {
-    var log = await this.获得log()
-
     if (this.环境变量 != null) return this.环境变量
 
     await this.初始化()
     var parseResult = this.opt.环境描述.safeParse(env)
     if (parseResult.success == false) {
+      var log = await this.获得log()
       await log.err('环境变量验证失败: %o', parseResult.error)
       throw new Error('环境变量验证失败')
     }
