@@ -7,6 +7,7 @@ import { Log } from '@lsby/ts-log'
 export class Env<环境变量描述 extends z.AnyZodObject> {
   private 环境变量: z.infer<环境变量描述> | null = null
   private log: Log | null = null
+  private 锁 = false
 
   constructor(
     private opt:
@@ -65,14 +66,26 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
   async 获得环境变量(): Promise<z.infer<环境变量描述>> {
     if (this.环境变量 != null) return this.环境变量
 
+    if (this.锁) {
+      while (true) {
+        await new Promise<void>((res, _rej) => {
+          setTimeout(() => res(), 0)
+        })
+      }
+    }
+    this.锁 = true
+
     await this.初始化()
     var parseResult = this.opt.环境描述.safeParse(env)
     if (parseResult.success == false) {
       var log = await this.获得log()
       await log.err('环境变量验证失败: %o', parseResult.error)
+      this.锁 = false
       throw new Error('环境变量验证失败')
     }
     this.环境变量 = parseResult.data
+
+    this.锁 = false
 
     return this.环境变量
   }
