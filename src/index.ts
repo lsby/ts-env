@@ -25,7 +25,7 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
   ) {}
 
   private async 获得log(): Promise<Log> {
-    var log名称 = this.opt.log名称 || '@lsby/ts-env'
+    var log名称 = this.opt.log名称 || '@lsby:ts-env'
 
     if (this.log != null) return this.log
     this.log = new Log(log名称)
