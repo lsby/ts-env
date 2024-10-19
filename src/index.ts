@@ -10,19 +10,11 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
   private 锁 = false
 
   constructor(
-    private opt:
-      | {
-          模式: '直接指定文件路径'
-          环境文件路径: string
-          环境描述: 环境变量描述
-          log名称?: string | undefined
-        }
-      | {
-          模式: '通过环境变量指定文件路径'
-          环境变量名称: string
-          环境描述: 环境变量描述
-          log名称?: string | undefined
-        },
+    private opt: {
+      环境变量名称: string
+      环境描述: 环境变量描述
+      log名称?: string | undefined
+    },
   ) {}
 
   private async 获得log(): Promise<Log> {
@@ -37,18 +29,13 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
     var log = await this.获得log()
 
     var 文件路径: string | null = null
-    if (this.opt.模式 == '通过环境变量指定文件路径') {
-      await log.debug('查找环境变量: %o', this.opt.环境变量名称)
-      var p = process.env[this.opt.环境变量名称]
-      if (p == null) {
-        throw new Error(`环境变量 ${this.opt.环境变量名称} 不存在`)
-      }
-      文件路径 = p
-    }
+    await log.debug('查找环境变量: %o', this.opt.环境变量名称)
+    var p = process.env[this.opt.环境变量名称]
+    if (p != null) 文件路径 = p
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (文件路径 == null) {
-      throw new Error('无法读取环境文件路径')
+      await log.debug(`环境变量 %o 不存在, 跳过加载`, this.opt.环境变量名称)
+      return
     }
 
     await log.debug('查找环境变量文件: %o', 文件路径)
@@ -58,8 +45,7 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
       dotenv.config({ path: 文件路径 })
       return
     } else {
-      await log.debug(`没有找到环境变量文件: %o`)
-      throw new Error(`没有找到环境变量文件: ${文件路径}`)
+      await log.debug(`没有找到环境变量文件: %o, 跳过加载`, 文件路径)
     }
   }
 
