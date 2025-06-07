@@ -65,7 +65,7 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
       var log = await this.获得log()
       await log.err('环境变量验证失败: %o', parseResult.error)
       this.锁 = false
-      throw new Error('环境变量验证失败')
+      throw new Error(`环境变量验证失败: ${JSON.stringify(parseResult.error)}`)
     }
     this.环境变量 = parseResult.data
 
