@@ -60,6 +60,9 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
     this.锁 = true
 
     await this.初始化()
+
+    var log = await this.获得log()
+    await log.debug(`当前环境变量: %o`, env)
     var parseResult = this.opt.环境描述.safeParse(env)
     if (parseResult.success == false) {
       var log = await this.获得log()
