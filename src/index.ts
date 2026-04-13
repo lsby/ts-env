@@ -7,7 +7,6 @@ import { Log } from '@lsby/ts-log'
 export class Env<环境变量描述 extends z.AnyZodObject> {
   private 环境变量: z.infer<环境变量描述> | null = null
   private log: Log | null = null
-  private 锁 = false
 
   constructor(
     private opt: {
@@ -17,7 +16,7 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
     },
   ) {}
 
-  private async 获得log(): Promise<Log> {
+  private 获得log(): Log {
     var log名称 = this.opt.log名称 || '@lsby:ts-env'
 
     if (this.log != null) return this.log
@@ -25,54 +24,43 @@ export class Env<环境变量描述 extends z.AnyZodObject> {
     return this.log
   }
 
-  private async 初始化(): Promise<void> {
-    var log = await this.获得log()
+  private 初始化(): void {
+    var log = this.获得log()
 
     var 文件路径: string | null = null
-    await log.debug('查找环境变量: %o', this.opt.环境变量名称)
+    void log.debug('查找环境变量: %o', this.opt.环境变量名称)
     var p = process.env[this.opt.环境变量名称]
     if (p != null) 文件路径 = p
 
     if (文件路径 == null) {
-      await log.debug(`环境变量 %o 不存在, 跳过加载`, this.opt.环境变量名称)
+      void log.debug(`环境变量 %o 不存在, 跳过加载`, this.opt.环境变量名称)
       return
     }
 
-    await log.debug('查找环境变量文件: %o', 文件路径)
+    void log.debug('查找环境变量文件: %o', 文件路径)
     if (fs.existsSync(文件路径)) {
-      await log.debug('已找到环境变量文件')
-      await log.debug('将使用该文件定义的环境变量, 但不会覆盖终端环境变量')
+      void log.debug('已找到环境变量文件')
+      void log.debug('将使用该文件定义的环境变量, 但不会覆盖终端环境变量')
       dotenv.config({ path: 文件路径 })
       return
     } else {
-      await log.debug(`没有找到环境变量文件: %o, 跳过加载`, 文件路径)
+      void log.debug(`没有找到环境变量文件: %o, 跳过加载`, 文件路径)
     }
   }
 
-  async 获得环境变量(): Promise<z.infer<环境变量描述>> {
-    var sleep = async (): Promise<void> => {
-      await new Promise<void>((res, _rej) => setTimeout(() => res(), 0))
-    }
-    while (this.锁) await sleep()
-
+  获得环境变量(): z.infer<环境变量描述> {
     if (this.环境变量 != null) return this.环境变量
+    this.初始化()
 
-    this.锁 = true
-
-    await this.初始化()
-
-    var log = await this.获得log()
-    await log.debug(`当前环境变量: %o`, env)
+    var log = this.获得log()
+    void log.debug(`当前环境变量: %o`, env)
     var parseResult = this.opt.环境描述.safeParse(env)
     if (parseResult.success == false) {
-      var log = await this.获得log()
-      await log.err('环境变量验证失败: %o', parseResult.error)
-      this.锁 = false
+      var log = this.获得log()
+      void log.err('环境变量验证失败: %o', parseResult.error)
       throw new Error(`环境变量验证失败: ${JSON.stringify(parseResult.error)}`)
     }
     this.环境变量 = parseResult.data
-
-    this.锁 = false
 
     return this.环境变量
   }
